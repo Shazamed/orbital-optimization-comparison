@@ -29,13 +29,16 @@ oo_opt_methods = {
     "quantum_oo-vqe" : {
         'oo_layers': 3,
     },
+    "classical_oo-vqe_comb" : {
+        'oo_layers': 0,
+    },
 } 
 
 
 def run_opt(layers, method, molecule, gtol, runs=51):
     molecule_name = molecule
-    num_active_e = 2
-    num_active_o = 2
+    num_active_e = 6
+    num_active_o = 6
     oo_layers = oo_opt_methods[method]["oo_layers"]
 
     output_path = (
@@ -53,7 +56,7 @@ def run_opt(layers, method, molecule, gtol, runs=51):
             orbitals="canonical",
         )
 
-        if trial == 1:
+        if trial == 0:
             use_rand = False
         else:
             use_rand = True
@@ -67,14 +70,16 @@ def run_opt(layers, method, molecule, gtol, runs=51):
             use_projection=True,
             use_mat_mul=True,
             perfect_pair=True,
-            ref_bitstring="1100",
-            mo_perm=[0,1],
-            use_small_perturb_angles=True,
+            ref_bitstring="110011001100",
+            mo_perm=None,
+            use_small_perturb_angles=False,
         )
         if method == "classical_oo-vqe_alt":
-            tups.run_oo_vqe_alternating(options={"gtol": gtol})
+            tups.run_oo_vqe_alternating(options={"gtol": gtol}, loops=1000)
         elif method == "quantum_oo-vqe":
             tups.run_oo_vqe_quantum(options={"gtol": gtol})
+        elif method == "classical_oo-vqe_comb":
+            tups.run_oo_vqe_combined(options={"gtol": gtol})
         else:
             raise ValueError("Method not defined")
         
@@ -96,7 +101,8 @@ def run_opt(layers, method, molecule, gtol, runs=51):
 
 
 if __name__ == "__main__":
-    methods_names = ["quantum_oo-vqe","classical_oo-vqe_alt"]
+    # methods_names = ["quantum_oo-vqe","classical_oo-vqe_alt"]
+    methods_names = ["classical_oo-vqe_comb"]
     molecules_names = ["H6"]
     layers_range = range(1, 5)
     jobs = list(product(layers_range,methods_names,molecules_names))
